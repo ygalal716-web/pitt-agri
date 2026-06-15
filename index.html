@@ -9,41 +9,19 @@
         :root { --bg: #050505; --accent: #22c55e; --text: #ffffff; --neon-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
         body { font-family: 'Segoe UI', sans-serif; background: #050505; color: #ffffff; padding: 10px; }
         .container { max-width: 100%; margin: auto; text-align: center; }
-        
         .farm-title { font-size: 3.5em !important; font-weight: 900; color: var(--accent); margin: 20px 0; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px var(--accent); }
-        
-        .glossy-box { 
-            background: #0d0d0d;
-            padding: 30px; border-radius: 20px; 
-            border: 3px solid var(--accent); 
-            box-shadow: var(--neon-shadow);
-            margin: 20px 0;
-        }
-
+        .glossy-box { background: #0d0d0d; padding: 30px; border-radius: 20px; border: 3px solid var(--accent); box-shadow: var(--neon-shadow); margin: 20px 0; }
         h3 { font-size: 3em !important; font-weight: 900 !important; color: var(--accent) !important; margin-bottom: 25px !important; text-transform: uppercase; }
-        
-        input { 
-            font-size: 2.2em !important; font-weight: bold; padding: 25px !important; border-radius: 15px !important; 
-            border: 3px solid #333; background: #1a1a1a; color: var(--accent) !important; 
-            width: 90% !important; margin: 15px 0 !important;
-        }
-        
-        .btn { 
-            font-size: 2.2em !important; font-weight: 900 !important; background: transparent; 
-            border: 4px solid var(--accent) !important; color: var(--accent) !important; padding: 20px 40px !important; 
-            border-radius: 15px !important; cursor: pointer; margin: 10px; width: 90%;
-        }
+        input { font-size: 2.2em !important; font-weight: bold; padding: 25px !important; border-radius: 15px !important; border: 3px solid #333; background: #1a1a1a; color: var(--accent) !important; width: 90% !important; margin: 15px 0 !important; }
+        .btn { font-size: 2.2em !important; font-weight: 900 !important; background: transparent; border: 4px solid var(--accent) !important; color: var(--accent) !important; padding: 20px 40px !important; border-radius: 15px !important; cursor: pointer; margin: 10px; width: 90%; }
         .btn:hover { background: var(--accent); color: #000; box-shadow: var(--neon-shadow); }
-
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { font-size: 2.2em !important; font-weight: 900 !important; color: #fff !important; padding: 30px 10px !important; border-bottom: 4px solid var(--accent) !important; }
         td { font-size: 2.5em !important; font-weight: 800 !important; color: #fff !important; padding: 30px 10px !important; border-bottom: 2px solid #333 !important; }
-        
-        .signature { 
-            font-family: 'Arial Black', sans-serif; font-size: 1.5em; color: var(--accent); 
-            border: 3px solid var(--accent); padding: 20px 30px; border-radius: 50px; 
-            display: inline-block; font-weight: 900; margin-top: 30px;
-        }
+        .note-item { font-size: 2em !important; color: #fff; padding: 15px; border-bottom: 1px solid #333; text-align: right; display: flex; justify-content: space-between; align-items: center; }
+        .note-actions { display: flex; gap: 10px; }
+        .note-btn { font-size: 0.6em !important; padding: 10px !important; border: 2px solid var(--accent) !important; color: var(--accent) !important; cursor: pointer; border-radius: 10px; background: transparent; }
+        .signature { font-family: 'Arial Black', sans-serif; font-size: 1.5em; color: var(--accent); border: 3px solid var(--accent); padding: 20px 30px; border-radius: 50px; display: inline-block; font-weight: 900; margin-top: 30px; }
         .hidden { display: none; }
     </style>
 </head>
@@ -75,8 +53,13 @@
             <input type="number" id="partnerVal" placeholder="القيمة">
             <button class="btn" onclick="updatePartner('paid')">تسجيل دفع</button>
             <button class="btn" onclick="updatePartner('balance')" style="border-color: #ef4444; color: #ef4444;">إضافة عليه</button>
-            <input type="text" id="noteInput" placeholder="ملاحظة...">
+            <input type="text" id="noteInput" placeholder="اكتب ملاحظة...">
             <button class="btn" onclick="addNote()">إضافة ملاحظة</button>
+        </div>
+
+        <div class="glossy-box">
+            <h3>الملاحظات</h3>
+            <div id="notesList"></div>
         </div>
 
         <div class="glossy-box">
@@ -122,10 +105,10 @@
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         document.getElementById('title').innerText = title;
-        render();
+        renderAll();
     }
 
-    function render() {
+    function renderAll() {
         db.collection("expenses").onSnapshot(s => {
             let h = '', total = 0; s.forEach(d => {
                 let data = d.data(); total += Number(data.v);
@@ -149,6 +132,18 @@
             });
             document.getElementById('partBody').innerHTML = h;
         });
+        db.collection("notes").onSnapshot(s => {
+            let h = ''; s.forEach(d => {
+                let note = d.data().text;
+                h += `<div class="note-item"><span>📝 ${note}</span>
+                        <div class="note-actions">
+                            <button class="note-btn" onclick="editNote('${d.id}', '${note}')">تعديل</button>
+                            <button class="note-btn" onclick="del('notes','${d.id}')" style="border-color: #ef4444; color: #ef4444;">حذف</button>
+                        </div>
+                      </div>`;
+            });
+            document.getElementById('notesList').innerHTML = h;
+        });
     }
 
     function calc() {
@@ -165,6 +160,16 @@
         if(n) db.collection(col).add({n:n, v:v, q:q, t:t});
     }
 
+    function addNote() { 
+        let text = document.getElementById('noteInput').value;
+        if(text) { db.collection("notes").add({text: text}); document.getElementById('noteInput').value = ''; }
+    }
+
+    function editNote(id, oldText) {
+        let newText = prompt("عدل الملاحظة:", oldText);
+        if(newText !== null && newText !== "") { db.collection("notes").doc(id).update({text: newText}); }
+    }
+
     function del(col, id) { if(confirm("أكيد تحذف؟")) db.collection(col).doc(id).delete(); }
 
     function updatePartner(type) {
@@ -176,8 +181,6 @@
             else ref.set({paid: type == 'paid' ? val : 0, balance: type == 'balance' ? val : 0});
         });
     }
-
-    function addNote() { db.collection("notes").add({text: document.getElementById('noteInput').value}); }
 </script>
 </body>
 </html>
