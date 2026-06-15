@@ -7,44 +7,42 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <style>
         :root { --bg: #050505; --accent: #22c55e; --text: #ffffff; --neon-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
-        body { font-family: 'Segoe UI', sans-serif; background: #050505; color: #ffffff; padding: 20px; }
-        .container { max-width: 950px; margin: auto; text-align: center; }
+        body { font-family: 'Segoe UI', sans-serif; background: #050505; color: #ffffff; padding: 10px; }
+        .container { max-width: 100%; margin: auto; text-align: center; }
         
-        .farm-title { font-size: 4em; font-weight: 900; color: var(--accent); margin: 30px 0; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 10px var(--accent); }
+        .farm-title { font-size: 3.5em !important; font-weight: 900; color: var(--accent); margin: 20px 0; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px var(--accent); }
         
         .glossy-box { 
             background: #0d0d0d;
-            padding: 30px; border-radius: 25px; 
-            border: 2px solid var(--accent); 
+            padding: 30px; border-radius: 20px; 
+            border: 3px solid var(--accent); 
             box-shadow: var(--neon-shadow);
-            margin: 30px 0;
-            transition: 0.4s;
+            margin: 20px 0;
         }
 
-        h3 { font-size: 1.8em; font-weight: 800; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
+        h3 { font-size: 3em !important; font-weight: 900 !important; color: var(--accent) !important; margin-bottom: 25px !important; text-transform: uppercase; }
         
         input { 
-            font-size: 1.1em; font-weight: bold; padding: 15px; border-radius: 12px; 
-            border: 1px solid #333; background: #1a1a1a; color: var(--accent); 
-            width: 200px; margin: 10px; transition: 0.3s;
+            font-size: 2.2em !important; font-weight: bold; padding: 25px !important; border-radius: 15px !important; 
+            border: 3px solid #333; background: #1a1a1a; color: var(--accent) !important; 
+            width: 90% !important; margin: 15px 0 !important;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); outline: none; }
         
         .btn { 
-            font-size: 1em; font-weight: 900; background: transparent; 
-            border: 2px solid var(--accent); color: var(--accent); padding: 12px 30px; 
-            border-radius: 12px; cursor: pointer; transition: 0.3s; margin: 5px;
+            font-size: 2.2em !important; font-weight: 900 !important; background: transparent; 
+            border: 4px solid var(--accent) !important; color: var(--accent) !important; padding: 20px 40px !important; 
+            border-radius: 15px !important; cursor: pointer; margin: 10px; width: 90%;
         }
         .btn:hover { background: var(--accent); color: #000; box-shadow: var(--neon-shadow); }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { font-size: 1.8em !important; font-weight: 900 !important; color: #fff !important; padding: 25px 5px !important; border-bottom: 2px solid var(--accent) !important; }
-        td { font-size: 2em !important; font-weight: 800 !important; color: #ddd !important; padding: 30px 5px !important; border-bottom: 1px solid #222 !important; }
+        th { font-size: 2.2em !important; font-weight: 900 !important; color: #fff !important; padding: 30px 10px !important; border-bottom: 4px solid var(--accent) !important; }
+        td { font-size: 2.5em !important; font-weight: 800 !important; color: #fff !important; padding: 30px 10px !important; border-bottom: 2px solid #333 !important; }
         
         .signature { 
-            font-family: 'Arial Black', sans-serif; font-size: 1.2em; color: var(--accent); 
-            border: 2px solid var(--accent); padding: 15px 30px; border-radius: 50px; 
-            display: inline-block; font-weight: 900; box-shadow: var(--neon-shadow);
+            font-family: 'Arial Black', sans-serif; font-size: 1.5em; color: var(--accent); 
+            border: 3px solid var(--accent); padding: 20px 30px; border-radius: 50px; 
+            display: inline-block; font-weight: 900; margin-top: 30px;
         }
         .hidden { display: none; }
     </style>
@@ -73,12 +71,10 @@
             <h3>Admin Tools</h3>
             <button class="btn" onclick="add('expenses')">+ مصروف</button>
             <button class="btn" onclick="add('sales')">+ مدخلات</button>
-            <br>
             <input type="text" id="partnerName" placeholder="اسم الشريك">
             <input type="number" id="partnerVal" placeholder="القيمة">
             <button class="btn" onclick="updatePartner('paid')">تسجيل دفع</button>
             <button class="btn" onclick="updatePartner('balance')" style="border-color: #ef4444; color: #ef4444;">إضافة عليه</button>
-            <br><br>
             <input type="text" id="noteInput" placeholder="ملاحظة...">
             <button class="btn" onclick="addNote()">إضافة ملاحظة</button>
         </div>
@@ -86,13 +82,13 @@
         <div class="glossy-box">
             <h3>المصروفات</h3>
             <table><thead><tr><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>تحكم</th></tr></thead><tbody id="expBody"></tbody></table>
-            <div style="font-size:1.5em; font-weight:900; margin-top:15px;">الإجمالي: <span id="totalExp">0</span></div>
+            <div style="font-size:2.8em; font-weight:900; margin-top:20px;">الإجمالي: <span id="totalExp">0</span></div>
         </div>
 
         <div class="glossy-box">
             <h3>المدخلات</h3>
             <table><thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>التاريخ</th><th>تحكم</th></tr></thead><tbody id="salesBody"></tbody></table>
-            <div style="font-size:1.5em; font-weight:900; margin-top:15px;">الإجمالي: <span id="totalSales">0</span></div>
+            <div style="font-size:2.8em; font-weight:900; margin-top:20px;">الإجمالي: <span id="totalSales">0</span></div>
         </div>
 
         <div class="glossy-box">
@@ -100,15 +96,13 @@
             <table><thead><tr><th>الاسم</th><th>المدفوع</th><th>عليه</th><th>حسابه</th><th>تحكم</th></tr></thead><tbody id="partBody"></tbody></table>
         </div>
 
-        <div class="glossy-box" style="border: 4px solid var(--accent);">
+        <div class="glossy-box" style="border: 6px solid var(--accent);">
             <h3>صافي الربح النهائي</h3>
-            <div id="netProfit" style="font-size: 3.5em; font-weight:900;">0</div>
+            <div id="netProfit" style="font-size: 5em; font-weight:900;">0</div>
         </div>
     </div>
 
-    <div style="margin-top:50px; padding:40px;">
-        <div class="signature">Created and designed by programmer (Youssef Galal)</div>
-    </div>
+    <div class="signature">Created and designed by programmer (Youssef Galal)</div>
 </div>
 
 <script>
@@ -135,7 +129,7 @@
         db.collection("expenses").onSnapshot(s => {
             let h = '', total = 0; s.forEach(d => {
                 let data = d.data(); total += Number(data.v);
-                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('expenses','${d.id}')">X</button>` : '-'}</td></tr>`;
+                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:10px !important; font-size:1.5em !important;" onclick="del('expenses','${d.id}')">X</button>` : '-'}</td></tr>`;
             });
             document.getElementById('expBody').innerHTML = h;
             document.getElementById('totalExp').innerText = total; calc();
@@ -143,7 +137,7 @@
         db.collection("sales").onSnapshot(s => {
             let h = '', total = 0; s.forEach(d => {
                 let data = d.data(); total += Number(data.v);
-                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.q}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('sales','${d.id}')">X</button>` : '-'}</td></tr>`;
+                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.q}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:10px !important; font-size:1.5em !important;" onclick="del('sales','${d.id}')">X</button>` : '-'}</td></tr>`;
             });
             document.getElementById('salesBody').innerHTML = h;
             document.getElementById('totalSales').innerText = total; calc();
@@ -151,7 +145,7 @@
         db.collection("partners").onSnapshot(s => {
             let h = ''; s.forEach(d => {
                 let data = d.data(); let balance = Number(data.paid) - Number(data.balance);
-                h += `<tr><td>${d.id}</td><td>${data.paid}</td><td>${data.balance}</td><td>${balance}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('partners','${d.id}')">X</button>` : '-'}</td></tr>`;
+                h += `<tr><td>${d.id}</td><td>${data.paid}</td><td>${data.balance}</td><td>${balance}</td><td>${isAdmin ? `<button class="btn" style="padding:10px !important; font-size:1.5em !important;" onclick="del('partners','${d.id}')">X</button>` : '-'}</td></tr>`;
             });
             document.getElementById('partBody').innerHTML = h;
         });
