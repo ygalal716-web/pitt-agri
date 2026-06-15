@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>PITT AGRI | النظام المالي المحترف</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #050505; --accent: #22c55e; --text: #ffffff; --neon-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 950px; margin: auto; text-align: center; }
+        
+        .farm-title { font-size: 4em; font-weight: 900; color: var(--accent); margin: 30px 0; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 10px var(--accent); }
+        
+        /* المربع الأسود اللامع مع تحديد نيون */
+        .glossy-box { 
+            background: #0d0d0d;
+            padding: 30px; border-radius: 25px; 
+            border: 2px solid var(--accent); 
+            box-shadow: var(--neon-shadow);
+            margin: 30px 0;
+            transition: 0.4s;
+        }
+
+        h3 { font-size: 1.8em; font-weight: 800; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
+        
+        /* تصميم خانات الإدخال العصري */
+        input { 
+            font-size: 1.1em; font-weight: bold; padding: 15px; border-radius: 12px; 
+            border: 1px solid #333; background: #1a1a1a; color: var(--accent); 
+            width: 200px; margin: 10px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); outline: none; }
+        
+        .btn { 
+            font-size: 1em; font-weight: 900; background: transparent; 
+            border: 2px solid var(--accent); color: var(--accent); padding: 12px 30px; 
+            border-radius: 12px; cursor: pointer; transition: 0.3s; margin: 5px;
+        }
+        .btn:hover { background: var(--accent); color: #000; box-shadow: var(--neon-shadow); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { font-size: 1.2em; font-weight: 900; color: #fff; padding: 15px; border-bottom: 2px solid var(--accent); }
+        td { font-size: 1.1em; font-weight: 600; padding: 20px; border-bottom: 1px solid #222; }
+        
+        .signature { 
+            font-family: 'Arial Black', sans-serif; font-size: 1.2em; color: var(--accent); 
+            border: 2px solid var(--accent); padding: 15px 30px; border-radius: 50px; 
+            display: inline-block; font-weight: 900; box-shadow: var(--neon-shadow);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginPage">
+        <h1 class="farm-title">PITT AGRI</h1>
+        <div class="glossy-box">
+            <h3>Admin</h3>
+            <input type="password" id="adminPass" placeholder="كلمة سر المدير">
+            <br><button class="btn" onclick="check('admin')">دخول المدير</button>
+        </div>
+        <div class="glossy-box">
+            <h3>دخول الشركاء</h3>
+            <input type="password" id="partnerPass" placeholder="كلمة سر الشريك">
+            <br><button class="btn" onclick="check('partner')">دخول الشريك</button>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <h1 class="farm-title" id="title"></h1>
+        
+        <div id="adminControls" class="hidden glossy-box">
+            <h3>Admin Tools</h3>
+            <button class="btn" onclick="add('expenses')">+ مصروف</button>
+            <button class="btn" onclick="add('sales')">+ مدخلات</button>
+            <br>
+            <input type="text" id="partnerName" placeholder="اسم الشريك">
+            <input type="number" id="partnerVal" placeholder="القيمة">
+            <button class="btn" onclick="updatePartner('paid')">تسجيل دفع</button>
+            <button class="btn" onclick="updatePartner('balance')" style="border-color: #ef4444; color: #ef4444;">إضافة عليه</button>
+            <br><br>
+            <input type="text" id="noteInput" placeholder="ملاحظة...">
+            <button class="btn" onclick="addNote()">إضافة ملاحظة</button>
+        </div>
+
+        <div class="glossy-box">
+            <h3>المصروفات</h3>
+            <table><thead><tr><th>المنتج</th><th>السعر</th><th>التاريخ</th><th>تحكم</th></tr></thead><tbody id="expBody"></tbody></table>
+            <div style="font-size:1.5em; font-weight:900; margin-top:15px;">الإجمالي: <span id="totalExp">0</span></div>
+        </div>
+
+        <div class="glossy-box">
+            <h3>المدخلات</h3>
+            <table><thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>التاريخ</th><th>تحكم</th></tr></thead><tbody id="salesBody"></tbody></table>
+            <div style="font-size:1.5em; font-weight:900; margin-top:15px;">الإجمالي: <span id="totalSales">0</span></div>
+        </div>
+
+        <div class="glossy-box">
+            <h3>حسابات الشركاء</h3>
+            <table><thead><tr><th>الاسم</th><th>المدفوع</th><th>عليه</th><th>حسابه</th><th>تحكم</th></tr></thead><tbody id="partBody"></tbody></table>
+        </div>
+
+        <div class="glossy-box" style="border: 4px solid var(--accent);">
+            <h3>صافي الربح النهائي</h3>
+            <div id="netProfit" style="font-size: 3.5em; font-weight:900;">0</div>
+        </div>
+    </div>
+
+    <div style="margin-top:50px; padding:40px;">
+        <div class="signature">Created and designed by programmer (Youssef Galal)</div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyB8_LFxgQEK0ILAZE-GzXt3HPxYuEVIIOQ", authDomain: "pitt-aggri.firebaseapp.com", projectId: "pitt-aggri", storageBucket: "pitt-aggri.firebasestorage.app", messagingSenderId: "767374880012", appId: "1:767374880012:web:b8c9f8ce542d83ea1e1629" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    let isAdmin = false;
+
+    function check(role) {
+        let pass = (role == 'admin') ? document.getElementById('adminPass').value : document.getElementById('partnerPass').value;
+        if(role == 'admin' && pass == '86886') { isAdmin = true; document.getElementById('adminControls').classList.remove('hidden'); start("Admin"); }
+        else if(role == 'partner' && pass == '68668') { isAdmin = false; start("واجهة الشركاء"); }
+        else alert("كلمة السر خطأ!");
+    }
+
+    function start(title) {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('title').innerText = title;
+        render();
+    }
+
+    function render() {
+        db.collection("expenses").onSnapshot(s => {
+            let h = '', total = 0; s.forEach(d => {
+                let data = d.data(); total += Number(data.v);
+                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('expenses','${d.id}')">X</button>` : '-'}</td></tr>`;
+            });
+            document.getElementById('expBody').innerHTML = h;
+            document.getElementById('totalExp').innerText = total; calc();
+        });
+        db.collection("sales").onSnapshot(s => {
+            let h = '', total = 0; s.forEach(d => {
+                let data = d.data(); total += Number(data.v);
+                h += `<tr><td>${data.n}</td><td>${data.v}</td><td>${data.q}</td><td>${data.t}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('sales','${d.id}')">X</button>` : '-'}</td></tr>`;
+            });
+            document.getElementById('salesBody').innerHTML = h;
+            document.getElementById('totalSales').innerText = total; calc();
+        });
+        db.collection("partners").onSnapshot(s => {
+            let h = ''; s.forEach(d => {
+                let data = d.data(); let balance = Number(data.paid) - Number(data.balance);
+                h += `<tr><td>${d.id}</td><td>${data.paid}</td><td>${data.balance}</td><td>${balance}</td><td>${isAdmin ? `<button class="btn" style="padding:5px;" onclick="del('partners','${d.id}')">X</button>` : '-'}</td></tr>`;
+            });
+            document.getElementById('partBody').innerHTML = h;
+        });
+    }
+
+    function calc() {
+        let e = Number(document.getElementById('totalExp').innerText) || 0;
+        let s = Number(document.getElementById('totalSales').innerText) || 0;
+        let res = s - e;
+        let el = document.getElementById('netProfit');
+        el.innerText = res;
+        el.style.color = (res < 0) ? "#ef4444" : "#22c55e";
+    }
+
+    function add(col) {
+        let n = prompt("المنتج:"), v = Number(prompt("السعر:")), q = (col == 'sales') ? prompt("الكمية:") : '-', t = prompt("التاريخ:", new Date().toLocaleDateString());
+        if(n) db.collection(col).add({n:n, v:v, q:q, t:t});
+    }
+
+    function del(col, id) { if(confirm("أكيد تحذف؟")) db.collection(col).doc(id).delete(); }
+
+    function updatePartner(type) {
+        let name = document.getElementById('partnerName').value, val = Number(document.getElementById('partnerVal').value);
+        if(!name) return;
+        let ref = db.collection("partners").doc(name);
+        ref.get().then(s => {
+            if(s.exists) type == 'paid' ? ref.update({paid: s.data().paid + val}) : ref.update({balance: s.data().balance + val});
+            else ref.set({paid: type == 'paid' ? val : 0, balance: type == 'balance' ? val : 0});
+        });
+    }
+
+    function addNote() { db.collection("notes").add({text: document.getElementById('noteInput').value}); }
+</script>
+</body>
+</html>
